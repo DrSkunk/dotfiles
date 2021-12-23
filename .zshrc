@@ -118,7 +118,6 @@ if [ -e /home/sebastiaan/.nix-profile/etc/profile.d/nix.sh ]; then . /home/sebas
 
 eval $(thefuck --alias)
 alias fk=fuck
-alias repo="gh repo view --web"
 alias dc="docker-compose"
 
 export CHROME_EXECUTABLE=~/.local/share/flatpak/exports/bin/org.chromium.Chromium
@@ -146,15 +145,34 @@ dlp () {
 }
 
 clone () {
-    prefix='https://github.com/'
+    prefix='https://'
     link="${1#"$prefix"}" 
-    userAndRepo=($(echo "${link}" | tr '/', '\n'))
-    user=${userAndRepo[1]}
-    repo=${userAndRepo[2]}
-    gh repo clone ${link}
-    cd ~/github.com/${user}/${repo}
+    websiteUserAndRepo=($(echo "${link}" | tr '/', '\n'))
+    website=${websiteUserAndRepo[1]}
+    user=${websiteUserAndRepo[2]}
+    repo=${websiteUserAndRepo[3]}
+    cd ~/${website}/
+    mkdir -p ${user}
+    cd ${user}
+    git clone git@${website}:${user}/${repo}.git
+    cd ~/${website}/${user}/${repo}
 }
 
-
+repo () {
+        local url=$(git config --get remote.origin.url | sed 's/git@/\/\//g' | sed 's/.git$//' | sed 's/https://g' | sed 's/:/\//g')
+        if [[ $url == "" ]]
+        then
+                echo "Not a git repository or no remote.origin.url is set."
+        else
+                local branch=$(git rev-parse --abbrev-ref HEAD)
+                local url="http:${url}"
+                if [[ $branch != "master" ]]
+                then
+                        local url="${url}/tree/${branch}"
+                fi
+                echo $url
+                open $url
+        fi
+}
 
 export PATH="$HOME/.poetry/bin:$PATH"
