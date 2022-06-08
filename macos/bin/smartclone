@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+import sys
+import os
+from urllib.parse import urlparse
+
+if(len(sys.argv) != 2):
+    print("Usage: clone <url>")
+    exit()
+
+os.chdir(os.path.expanduser("~"))
+
+input_url = sys.argv[1]
+
+parsed_url = urlparse(sys.argv[1])
+target_dir = os.path.expanduser(
+    ("~/" + parsed_url.netloc + parsed_url.path).lower())
+
+os.makedirs(target_dir, exist_ok=True)
+clone_url = f'git@{parsed_url.netloc}:{parsed_url.path}.git {target_dir}'
+os.system("git clone " + clone_url)
+print("Cloned to " + target_dir)
+user = parsed_url.path.split('/')[1]
+print("User: " + user)
+if user == "tinkerlist":
+    os.chdir(target_dir)
+    print("Setting up GIT config")
+    os.system("git config user.name \"YOUR NAME\"")
+    os.system("git config user.email \"YOUREMAIL@HE.RE\"")
+print(target_dir)
