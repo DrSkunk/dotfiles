@@ -124,6 +124,7 @@ alias tre='tree -CL 2'
 alias ls="exa --icons"
 alias pull="git pull --rebase"
 alias fetch="git fetch --all --prune"
+alias run="jq '.scripts | keys[]' package.json | fzf | xargs npm run"
 
 test -r "~/.dir_colors" && eval $(gdircolors ~/dircolors.ansi-light)
 

@@ -1,0 +1,20 @@
+# This is Git's per-user configuration file.
+[user]
+# Please adapt and uncomment the following lines:
+	name = YOURNAME
+	email = YOURMAIL
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[rebase]
+	autoStash = true
+[alias]
+    amend = commit --amend --no-edit
+    fix = "!f() { git commit --fixup $1; GIT_SEQUENCE_EDITOR=touch git rebase -i $1^^ --autosquash --autostash; }; f"
+    latest = "!f() { git fetch -ap; git reset --hard \"origin/$(git rev-parse --abbrev-ref HEAD)\"; }; f"
+    nah = "!git reset --hard && git clean -df"
+    puff = push --force-with-lease
+    wip = "!f() { git add -A && git commit -m \"WIP\" --no-verify; }; f"
+    sync = "!f() { git pull --rebase && git push; }; f"
+    recent = "!f() { git checkout `git branch -v --sort=-committerdate | fzf | sed 's/^[* ]*//g' | cut -d ' ' -f 1`; }; f"
