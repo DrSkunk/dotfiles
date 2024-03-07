@@ -1,0 +1,22 @@
+#!/usr/bin/env zx
+const token = fs.readFile("./slacktoken", "utf8");
+const x =
+  await $`/System/Library/PrivateFrameworks/Apple80211.framework/Resources/airport -I  | awk -F' SSID: '  '/ SSID: / {print $2}'`;
+console.log(x.stdout.trim());
+
+const statuses = {
+  workSSID: {},
+  homeSSID: {},
+};
+
+await setStatus(statuses);
+
+async function getStatus() {}
+
+async function setStatus(status) {
+  await fetch("https://httpbin.org/post", {
+    method: "post",
+    body: JSON.stringify(status),
+    headers: { "Content-Type": "application/json" },
+  });
+}
