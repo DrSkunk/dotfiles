@@ -1,3 +1,4 @@
+# zmodload zsh/zprof
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -6,9 +7,11 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/.local/bin/:$PATH
 export PATH=$HOME/.config/nextinit:$PATH
 export PATH=$HOME/bin:$PATH
+export PATH=$HOME/bin/flutter/bin:$PATH
+export PATH=$HOME/.docker/bin:$PATH
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/sebastiaanjansen/.oh-my-zsh"
 
@@ -118,13 +121,21 @@ alias gitignore="
         | xargs -I@ cat '@.gitignore' \
         >> .gitignore
 "
-alias dc="docker-compose"
+alias dc="docker compose"
 alias tree="tree -C"
 alias tre='tree -CL 2'
 alias ls="exa --icons"
 alias pull="git pull --rebase"
 alias fetch="git fetch --all --prune"
-alias run="jq '.scripts | keys[]' package.json | fzf | xargs npm run"
+# alias run=
+run () {
+  echo $0
+  if [ -z "$1" ];  then
+    jq '.scripts | keys[]' package.json | fzf | xargs npm run
+  else
+    npm run $1
+  fi
+}
 
 test -r "~/.dir_colors" && eval $(gdircolors ~/dircolors.ansi-light)
 
@@ -165,50 +176,130 @@ clone () {
     cd $(smartclone $1 | tail -1)
 }
 
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-autoload -U add-zsh-hook
-load-nvmrc() {
-  local node_version="$(nvm version)"
-  local nvmrc_path="$(nvm_find_nvmrc)"
-
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
-
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$node_version" ]; then
-      nvm use
-    fi
-  elif [ "$node_version" != "$(nvm version default)" ]; then
-    echo "Reverting to nvm default version"
-    nvm use default
+svelte () {
+  if (($#  == 0))
+  then
+    echo "Usage: svelte <project-name>"
+    return 1
   fi
+  echo "Initializing new svelte project with tailwind in $1"
+  cd $(node ~/bin/svelte-init/index.mjs $1 | tail -1)
+  code .
+  npm run dev -- --open
 }
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
+
+svelterik () {
+  if (($#  == 0))
+  then
+    echo "Usage: svelte <project-name>"
+    return 1
+  fi
+  echo "Initializing new svelte project with tailwind and icons in $1"
+  cd $(node ~/bin/svelte-icon-init/index.mjs $1 | tail -1)
+  code .
+  npm run dev -- --open
+}
+
+# clone () {
+#     prefix='https://'
+#     link="${1#"$prefix"}" 
+#     websiteUserAndRepo=($(echo "${link}" | tr '/', '\n'))
+#     website=($(echo ${websiteUserAndRepo[1]} | tr '[:upper:]' '[:lower:]'))
+#     user=($(echo ${websiteUserAndRepo[2]} | tr '[:upper:]' '[:lower:]'))
+#     repo=($(echo ${websiteUserAndRepo[3]} | tr '[:upper:]' '[:lower:]'))
+#     echo "Cloning to ~/${website}/${user}/${repo}"
+#     echo ${user}
+#     cd ~/${website}/
+#     mkdir -p ${user}
+#     cd ${user}
+#     git clone git@${website}:${user}/${repo}.git
+#     cd ~/${website}/${user}/${repo}
+#     if [[ "$user" = "tinkerlist" ]]; then
+#         echo "Setting up Tinkerlist GIT config"
+#         git config user.name "Sebastiaan Jansen"
+#         git config user.email "sebastiaan@tinkerlist.tv"
+#     fi
+# }
+
+export ANDROID_HOME=/Users/sebastiaanjansen/Library/Android/sdk
+export ANDROID_SDK_ROOT=/Users/sebastiaanjansen/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+
+eval "$(fnm env --use-on-cd)"
+alias nvm="fnm"
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# autoload -U add-zsh-hook
+# load-nvmrc() {
+#   local node_version="$(nvm version)"
+#   local nvmrc_path="$(nvm_find_nvmrc)"
+
+#   if [ -n "$nvmrc_path" ]; then
+#     local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+#     if [ "$nvmrc_node_version" = "N/A" ]; then
+#       nvm install
+#     elif [ "$nvmrc_node_version" != "$node_version" ]; then
+#       nvm use
+#     fi
+#   elif [ "$node_version" != "$(nvm version default)" ]; then
+#     echo "Reverting to nvm default version"
+#     nvm use default
+#   fi
+# }
+# add-zsh-hook chpwd load-nvmrc
+# load-nvmrc
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+export ENHANCD_AWK=awk
+export ENHANCD_USE_ABBREV=true
 source ~/.oh-my-zsh/custom/plugins/enhancd/init.sh
 
-eval "$(pyenv init -)"
+# eval "$(pyenv init -)"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/sebastiaanjansen/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/sebastiaanjansen/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/sebastiaanjansen/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/sebastiaanjansen/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
+# __conda_setup="$('/Users/sebastiaanjansen/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+# if [ $? -eq 0 ]; then
+#     eval "$__conda_setup"
+# else
+#     if [ -f "/Users/sebastiaanjansen/miniconda3/etc/profile.d/conda.sh" ]; then
+#         . "/Users/sebastiaanjansen/miniconda3/etc/profile.d/conda.sh"
+#     else
+#         export PATH="/Users/sebastiaanjansen/miniconda3/bin:$PATH"
+#     fi
+# fi
+# unset __conda_setup
 # <<< conda initialize <<<
 
+# bun completions
+# [ -s "/Users/sebastiaanjansen/.bun/_bun" ] && source "/Users/sebastiaanjansen/.bun/_bun"
+
+# Bun
+# export BUN_INSTALL="/Users/sebastiaanjansen/.bun"
+# export PATH="$BUN_INSTALL/bin:$PATH"
+
+# ESP Idf
+# export IDF_PATH=~/esp/esp-idf
+# export PATH=$HOME/esp/xtensa-esp32-elf/bin:$PATH
+# export PATH="$IDF_PATH/tools:$PATH"
+# export SDKROOT=$(xcrun --show-sdk-path --sdk macosx)
+
+# pnpm
+# export PNPM_HOME="/Users/sebastiaanjansen/Library/pnpm"
+# case ":$PATH:" in
+#   *":$PNPM_HOME:"*) ;;
+#   *) export PATH="$PNPM_HOME:$PATH" ;;
+# esac
+# pnpm end
+# bun
+# export BUN_INSTALL="$HOME/.bun"
+# export PATH="$BUN_INSTALL/bin:$PATH"
+# zprof
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+export PICO_SDK_PATH=/Users/sebastiaanjansen/github.com/raspberrypi/pico-sdk
