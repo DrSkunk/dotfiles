@@ -193,6 +193,50 @@ clone () {
     cd $(smartclone $1 | tail -1)
 }
 
+clone2() {
+  # Check for argument count
+  if [ "$#" -ne 1 ]; then
+    echo "Usage: clone <url>"
+    exit 1
+  fi
+
+  # Input URL
+  input_url=$1
+
+  # Parse the URL components
+  scheme=$(echo "$input_url" | grep :// | sed -e's,^\(.*://\).*,\1,g')
+  url_without_scheme=${input_url//$scheme/}
+  hostname=$(echo "$url_without_scheme" | grep / | cut -d/ -f1)
+  path=$(echo "$url_without_scheme" | grep / | cut -d/ -f2 -f3)
+  target_dir="$HOME/${hostname}/${path}"
+
+  # Check if directory exist
+  if [ -d "$target_dir" ]; then
+    # If the directory exists, cd to it.
+    echo "$target_dir"
+    cd "$target_dir" || exit # Exit if cd fails, usually due to permission issues.
+    echo "Directory already exists, is it already cloned?"
+    exit 0
+  else
+    echo "Directory does not exist: $target_dir"
+  fi
+
+  # Navigate to the home directory
+  # cd ~ || exit
+
+  # Create and navigate to the target directory
+  target_dir="$HOME/${hostname}/${path}"
+  target_dir_lower=$(echo "$target_dir" | tr '[:upper:]' '[:lower:]')
+  #mkdir -p "$target_dir_lower" || exit
+
+  # Clone the repository
+  clone_url="${input_url} ${target_dir_lower}"
+  git clone "$clone_url"
+  echo "Cloned to ${target_dir_lower}"
+
+  echo "$target_dir_lower"
+}
+
 svelte () {
   if (($#  == 0))
   then
