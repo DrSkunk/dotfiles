@@ -172,6 +172,23 @@ repo () {
         fi
 }
 
+repo2() {
+  local ssh_url=$(git config --get remote.origin.url)
+  local https_url
+
+  # Check if the URL is a valid SSH Git URL.
+  if [[ "$ssh_url" = git@* ]]; then
+    # Replace ':' with '/', 'git@' with 'https://' and remove .git at the end
+    https_url=$(echo "$ssh_url" | sed -e 's/:/\//g' -e 's/^git@/https:\/\//' -e 's/\.git$//')
+    open "$https_url"
+  elif [[ "$ssh_url" == http* ]]; then
+    open "$ssh_url"
+  else
+    echo "Invalid SSH Git URL: $ssh_url" >&2
+    return 1
+  fi
+}
+
 clone () {
     cd $(smartclone $1 | tail -1)
 }
