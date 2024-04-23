@@ -197,7 +197,7 @@ clone2() {
   # Check for argument count
   if [ "$#" -ne 1 ]; then
     echo "Usage: clone <url>"
-    exit 1
+    return 1
   fi
 
   # Input URL
@@ -207,8 +207,8 @@ clone2() {
   scheme=$(echo "$input_url" | grep :// | sed -e's,^\(.*://\).*,\1,g')
   url_without_scheme=${input_url//$scheme/}
   hostname=$(echo "$url_without_scheme" | grep / | cut -d/ -f1)
-  path=$(echo "$url_without_scheme" | grep / | cut -d/ -f2 -f3)
-  target_dir="$HOME/${hostname}/${path}"
+  complete_path=$(echo "$url_without_scheme" | grep / | cut -d/ -f2 -f3)
+  target_dir="$HOME/${hostname}/${complete_path}"
 
   # Check if directory exist
   if [ -d "$target_dir" ]; then
@@ -216,7 +216,7 @@ clone2() {
     echo "$target_dir"
     cd "$target_dir" || exit # Exit if cd fails, usually due to permission issues.
     echo "Directory already exists, is it already cloned?"
-    exit 0
+    return 0
   else
     echo "Directory does not exist: $target_dir"
   fi
@@ -225,13 +225,12 @@ clone2() {
   # cd ~ || exit
 
   # Create and navigate to the target directory
-  target_dir="$HOME/${hostname}/${path}"
+  target_dir="$HOME/${hostname}/${complete_path}"
   target_dir_lower=$(echo "$target_dir" | tr '[:upper:]' '[:lower:]')
-  #mkdir -p "$target_dir_lower" || exit
+  mkdir -p "$target_dir_lower" || return
 
   # Clone the repository
-  clone_url="${input_url} ${target_dir_lower}"
-  git clone "$clone_url"
+  git clone ${input_url} ${target_dir_lower}
   echo "Cloned to ${target_dir_lower}"
 
   echo "$target_dir_lower"
